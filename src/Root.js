@@ -1,6 +1,11 @@
+import { useContext } from 'react';
 import { Outlet, NavLink } from "react-router-dom";
 
+import { OnlineShop } from './App';
+
 export function Root() {
+    const {cartData} = useContext(OnlineShop);
+
     return (
         <>
             <nav className="navbar navbar-expand-lg navbar-dark bg-dark mb-3">
@@ -16,7 +21,9 @@ export function Root() {
                             to="/">Products</NavLink>
                         <NavLink className='nav-link'
                             aria-current={({isActive}) => isActive ? 'true' : 'false'}
-                            to="/cart">Cart</NavLink>
+                            to="/cart">
+                            <i className="bi bi-cart me-1"/>Cart ({cartData.length})
+                        </NavLink>
                     </div>
                     </div>
                 </div>
