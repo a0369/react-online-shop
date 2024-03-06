@@ -28,7 +28,9 @@ export function Root() {
                     </div>
                 </div>
             </nav>
-            <Outlet />
+            <div className="mb-5">
+                <Outlet />
+            </div>
         </>
     );
 }

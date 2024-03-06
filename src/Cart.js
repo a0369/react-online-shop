@@ -27,10 +27,12 @@ import {
     Spacer,
     FormControl,
     FormLabel,
-    Select
+    Select,
+    useRadioGroup
 } from '@chakra-ui/react';
 import { Link as ReactRouterLink } from 'react-router-dom'
 
+import { RadioCard } from './RadioCard';
 import { OnlineShop } from './App';
 import { AltNumInput } from './AltNumInput';
 
@@ -96,13 +98,36 @@ export function Cart() {
         }));
     }
 
+    const shippingAddresses = [{
+        id: 1,
+        name: 'John Smith',
+        address: '123 Main St',
+        city: 'Beverly Hills',
+        state: 'CA',
+        zip: '90210'
+    }, {
+        id: 2,
+        name: 'John Smith',
+        address: '945 Main St',
+        city: 'Beverly Hills',
+        state: 'CA',
+        zip: '90210'
+    }];
+
+    const { getRootProps, getRadioProps } = useRadioGroup({
+        name: 'shippingAddress',
+        defaultValue: shippingAddresses[0].id.toString()
+    })
+
+    const group = getRootProps()
+
     return (
         <div className="container">
             <h1>Cart</h1>
 
             <div className='row'>
                 <div className='col-md-8'>
-                    <TableContainer className='mt-3'>
+                    <TableContainer className='mt-3 mb-5'>
                         <Table variant='simple'>
                             <Thead>
                                 <Tr>
@@ -161,6 +186,33 @@ export function Cart() {
                             </Tbody>
                         </Table>
                     </TableContainer>
+
+                    <Heading as='h2' size='md' mb={3}>Shipping Address</Heading>
+                    <HStack wrap='wrap' mb={10} {...group}>
+                        {shippingAddresses.map((value) => {
+                            const radio = getRadioProps({value: value.id.toString()})
+                            return (
+                                <RadioCard key={value.id} {...radio}>
+                                    {value.name}<br />
+                                    {value.address}<br />
+                                    {value.city}, {value.state} {value.zip}
+                                </RadioCard>
+                            )
+                        })}
+                    </HStack>
+
+                    <Box mb={10}>
+                        <Heading as='h2' size='md' mb={3}>Payment Method</Heading>
+                        <FormControl>
+                            <FormLabel className='sr-only'>Payment Choice</FormLabel>
+                            <Select defaultValue='1'>
+                                <option value='1'>Visa 4242</option>
+                                <option value='2'>Mastercard 8193</option>
+                            </Select>
+                        </FormControl>
+                    </Box>
+                    
+
                 </div>
                 <div className='col-md-4'>
                     <Card mb={5}>
