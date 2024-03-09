@@ -1,4 +1,4 @@
-import { useContext, useMemo } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import {
     Table,
     Thead,
@@ -37,8 +37,10 @@ import { OnlineShop } from './App';
 import { AltNumInput } from './AltNumInput';
 
 export function Cart() {
-    const {cartData, setCartData, products} = useContext(OnlineShop);
+    const { cartData, setCartData, products } = useContext(OnlineShop);
     const { isOpen, onOpen, onClose } = useDisclosure()
+    const [ shipMethod, setShipMethod ] = useState('standard')
+    const [ delIndex, setDelIndex ] = useState(-1);
 
     /*
     *   Retrieve the cart information
@@ -78,25 +80,16 @@ export function Cart() {
             ret.subtotal += parseFloat(productInfo.price) * item.qty; 
         });
 
+        if (shipMethod === 'express') {
+            ret.shipping = 19.99;
+        } else {
+            ret.shipping = 8.99;
+        }
+
         ret.total += (parseFloat(ret.shipping) + ret.subtotal);
 
         return ret;
-    }, [cartData, products])
-
-    /*
-    *   Change the Quantity of an item
-    *   @param id - id of the product
-    *   @param newQty - updated quantity of a product
-    */
-    const qtyChanged = (id, newQty) => {
-        setCartData(cartData.map((item) => {
-            if (item.id === id) {
-                item.qty = newQty;
-            }
-
-            return item;
-        }));
-    }
+    }, [cartData, products, shipMethod])
 
     const shippingAddresses = [{
         id: 1,
@@ -113,6 +106,47 @@ export function Cart() {
         state: 'CA',
         zip: '90210'
     }];
+
+    /*
+    *   Change the Quantity of an item
+    *   @param id - id of the product
+    *   @param newQty - updated quantity of a product
+    */
+    const qtyChanged = (id, newQty) => {
+        setCartData(cartData.map((item) => {
+            if (item.id === id) {
+                item.qty = newQty;
+            }
+
+            return item;
+        }));
+    }
+
+    /*
+    *   Update Shipping Event
+    *   @param evt - event parameter for the dropdown
+    */
+    const updateShipping = (evt) => {
+        setShipMethod(evt.target.value);
+    }
+
+    /*
+    *   Open the delete product dialog
+    *   @param index - index of item in cart
+    */
+    const openDelProduct = (index) => {
+        setDelIndex(index);
+        onOpen();
+    };
+
+    /*
+    *   Delete a cart item at a specific index
+    *   @param index - index of item in cart
+    */
+    const delProduct = (index) => {
+        setCartData(cartData.filter((_, i) => i !== index));
+        onClose();
+    }
 
     const { getRootProps, getRadioProps } = useRadioGroup({
         name: 'shippingAddress',
@@ -139,7 +173,7 @@ export function Cart() {
                             <Tbody>
                             {
                                 (cartData.length > 0) ?
-                                retrieveCartInfo.map((item) => (
+                                retrieveCartInfo.map((item, index) => (
                                     <Tr key={item.id}>
                                         <Td>
                                             <HStack spacing='15px'>
@@ -156,7 +190,7 @@ export function Cart() {
                                                     </Box>
 
                                                     <p>
-                                                        <Button colorScheme='red' size='xs' variant='outline' onClick={onOpen}>
+                                                        <Button colorScheme='red' size='xs' variant='outline' onClick={() => openDelProduct(index)}>
                                                             Remove
                                                         </Button>
                                                     </p>
@@ -220,9 +254,9 @@ export function Cart() {
                             <Heading size='md' mb={4}>Shipping</Heading>
                             <FormControl>
                                 <FormLabel>Shipping Options</FormLabel>
-                                <Select defaultValue='standard'>
-                                    <option value='express'>Express (Overnight)</option>
+                                <Select defaultValue={shipMethod} onChange={($event) => updateShipping($event)}>
                                     <option value='standard'>Standard (3 - 5 days)</option>
+                                    <option value='express'>Express (Overnight)</option>
                                 </Select>
                             </FormControl>
                         </CardBody>
@@ -262,7 +296,7 @@ export function Cart() {
                     </ModalBody>
 
                     <ModalFooter>
-                        <Button colorScheme='red' mr={3} onClick={onClose}>
+                        <Button colorScheme='red' mr={3} onClick={() => delProduct(delIndex)}>
                         Yes
                         </Button>
                         <Button variant='ghost' onClick={onClose}>No</Button>
